@@ -1,0 +1,30 @@
+name: Weekly Gig-Tracker Crawler
+
+on:
+  schedule:
+    # 매주 월요일 아침 9시(한국 시간 기준, UTC 0시)에 자동 실행
+    - cron: '0 0 * * 1'
+  workflow_dispatch: # 깃허브 웹에서 수동으로도 즉시 실행할 수 있게 버튼을 열어둠
+
+jobs:
+  run-crawler:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 소스코드 내려받기
+        uses: actions/checkout@v4
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: 의존성 패키지 설치
+        run: |
+          pip install requests beautifulsoup4 supabase
+
+      - name: 크롤러 실행
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: |
+          python crawler.py
