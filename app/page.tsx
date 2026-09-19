@@ -7,18 +7,29 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// 오늘 날짜와 시작일/종료일을 비교하여 실시간 상태를 반환하는 함수
-function getDynamicStatus(startDate: string, endDate: string) {
-  if (!startDate || !endDate) return '정보 없음'
-  
-  const today = new Date().toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).replace(/\. /g, '-').replace('.', '')
+// 날짜 문자열에서 기호를 다 빼고 YYYYMMDD 숫자로 바꿔서 안전하게 비교하는 함수
+function getNormalizedDate(dateStr: string) {
+  if (!dateStr) return ''
+  // 숫자만 남기고 모두 제거 (예: "2026.07.18" 또는 "2026-07-18" -> "20260718")
+  const clean = dateStr.replace(/[^0-9]/g, '')
+  return clean
+}
 
-  if (today < startDate) return '공연 예정'
-  if (today > endDate) return '공연 종료'
+function getDynamicStatus(startDate: string, endDate: string) {
+  const cleanStart = getNormalizedDate(startDate)
+  const cleanEnd = getNormalizedDate(endDate)
+
+  if (!cleanStart || !cleanEnd) return '정보 없음'
+
+  // 오늘 날짜를 YYYYMMDD 숫자로 구하기 (예: 20260919)
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const todayNum = `${year}${month}${day}`
+
+  if (todayNum < cleanStart) return '공연 예정'
+  if (todayNum > cleanEnd) return '공연 종료'
   return '공연중'
 }
 
