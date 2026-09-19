@@ -7,14 +7,29 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// 오늘 날짜와 시작일/종료일을 비교하여 실시간 상태를 반환하는 함수
+function getDynamicStatus(startDate: string, endDate: string) {
+  if (!startDate || !endDate) return '정보 없음'
+  
+  const today = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).replace(/\. /g, '-').replace('.', '')
+
+  if (today < startDate) return '공연 예정'
+  if (today > endDate) return '공연 종료'
+  return '공연중'
+}
+
 export default function Home() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedItem, setSelectedItem] = useState<any | null>(null) // 상세 모달 상태
-  const [isZoomed, setIsZoomed] = useState(false) // 💡 포스터 확대 보기 상태 추가
+  const [isZoomed, setIsZoomed] = useState(false) // 포스터 확대 보기 상태
 
- const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!query.trim()) return
 
@@ -22,7 +37,7 @@ export default function Home() {
     try {
       const formattedQuery = `%${query.trim().replace(/\s+/g, '%')}%`
 
-      // 💡 공연 제목(prfnm) 혹은 출연진(prfcast) 중 하나라도 검색어가 포함되면 가져오도록 .or() 조건 적용
+      // 공연 제목(prfnm) 혹은 출연진(prfcast) 중 하나라도 검색어가 포함되면 가져오도록 .or() 조건 적용
       const { data, error } = await supabase
         .from('performances')
         .select('*')
@@ -97,7 +112,12 @@ export default function Home() {
                   <p className="text-sm text-gray-600 mb-1">장소: {item.fcltynm}</p>
                   <p className="text-sm text-gray-500 mb-1">기간: {item.prfpdfrom} ~ {item.prfenddate}</p>
                 </div>
-                <p className="text-xs text-blue-600 font-medium line-clamp-1">출연: {item.prfcast || '정보 없음'}</p>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs text-blue-600 font-medium line-clamp-1 flex-1">출연: {item.prfcast || '정보 없음'}</p>
+                  <span className="text-xs font-semibold px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full shrink-0 ml-2">
+                    {getDynamicStatus(item.prfpdfrom, item.prfenddate)}
+                  </span>
+                </div>
               </div>
             </div>
           ))}
@@ -120,7 +140,7 @@ export default function Home() {
             </button>
 
             <div className="flex gap-4 mb-4">
-              {/* 💡 포스터 클릭 시 확대 상태를 true로 변경 */}
+              {/* 포스터 클릭 시 확대 상태를 true로 변경 */}
               {selectedItem.poster && (
                 <div className="relative group cursor-pointer" onClick={() => setIsZoomed(true)}>
                   <img
@@ -140,7 +160,9 @@ export default function Home() {
                 <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedItem.prfnm}</h2>
                 <p className="text-sm text-gray-600 mb-1">🏛️ 장소: {selectedItem.fcltynm}</p>
                 <p className="text-sm text-gray-600 mb-1">📅 기간: {selectedItem.prfpdfrom} ~ {selectedItem.prfenddate}</p>
-                <p className="text-sm text-gray-600">⚡ 상태: {selectedItem.prfstate}</p>
+                <p className="text-sm text-gray-600">
+                  ⚡ 상태: <span className="font-semibold text-blue-600">{getDynamicStatus(selectedItem.prfpdfrom, selectedItem.prfenddate)}</span>
+                </p>
               </div>
             </div>
 
@@ -161,7 +183,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 💡 포스터 원본 크게 보기 라이트박스 모달 */}
+      {/* 포스터 원본 크게 보기 라이트박스 모달 */}
       {isZoomed && selectedItem && (
         <div
           className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[60] cursor-zoom-out"
