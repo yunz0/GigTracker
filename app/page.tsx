@@ -30,7 +30,7 @@ function getDynamicStatus(startDate: string, endDate: string) {
 
   if (todayNum < cleanStart) return '공연 예정'
   if (todayNum > cleanEnd) return '공연 종료'
-  return '공연중'
+  return '공연 당일'
 }
 
 export default function Home() {
@@ -55,7 +55,7 @@ export default function Home() {
         .or(`prfnm.ilike.${formattedQuery},prfcast.ilike.${formattedQuery}`)
         .limit(20)
 
-      if (error) throw erro
+      if (error) throw error
       
       console.log('가져온 공연 데이터:', data)
       
