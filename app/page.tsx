@@ -122,7 +122,9 @@ export default function Home() {
                 <div>
                   <h3 className="font-bold text-lg text-gray-900 mb-1 line-clamp-1">{item.prfnm}</h3>
                   <p className="text-sm text-gray-600 mb-1">장소: {item.fcltynm}</p>
-                  <p className="text-sm text-gray-500 mb-1">기간: {item.prfpdfrom} ~ {item.prfenddate}</p>
+                  <p className="text-sm text-gray-500 mb-1">기간: {item.prfenddate && item.prfenddate !== item.prfpdfrom 
+    ? `${item.prfpdfrom} ~ ${item.prfenddate}` 
+    : item.prfpdfrom}</p>
                 </div>
                 <div className="flex items-center justify-between mt-1">
                   <p className="text-xs text-blue-600 font-medium line-clamp-1 flex-1">출연: {item.prfcast || '정보 없음'}</p>
@@ -171,7 +173,9 @@ export default function Home() {
                 </span>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedItem.prfnm}</h2>
                 <p className="text-sm text-gray-600 mb-1">🏛️ 장소: {selectedItem.fcltynm}</p>
-                <p className="text-sm text-gray-600 mb-1">📅 기간: {selectedItem.prfpdfrom} ~ {selectedItem.prfenddate}</p>
+                <p className="text-sm text-gray-600 mb-1">📅 기간: {selectedItem.prfenddate && selectedItem.prfenddate !== selectedItem.prfpdfrom 
+    ? `${selectedItem.prfpdfrom} ~ ${selectedItem.prfenddate}` 
+    : selectedItem.prfpdfrom}</p>
                 <p className="text-sm text-gray-600">
                   ⚡ 상태: <span className="font-semibold text-blue-600">{getDynamicStatus(selectedItem.prfpdfrom, selectedItem.prfenddate)}</span>
                 </p>
