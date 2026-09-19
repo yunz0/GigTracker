@@ -55,7 +55,10 @@ export default function Home() {
         .or(`prfnm.ilike.${formattedQuery},prfcast.ilike.${formattedQuery}`)
         .limit(20)
 
-      if (error) throw error
+      if (error) throw erro
+      
+      console.log('가져온 공연 데이터:', data)
+      
       setResults(data || [])
     } catch (error) {
       console.error('검색 에러:', error)
